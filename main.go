@@ -98,5 +98,9 @@ func main() {
 		return c.String(200, fmt.Sprintf("Lat: %f, Long: %f", coord.Lat, coord.Long))
 	})
 
+	e.GET("/timestamp", func(c echo.Context) error {
+		return c.String(200, fmt.Sprintf("%d", time.Now().UnixMilli()))
+	})
+
 	e.Logger.Fatal(e.Start(":8888"))
 }
