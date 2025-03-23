@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"sync"
 	"time"
@@ -77,6 +78,15 @@ func main() {
 
 		// Update coordinates
 		inserted := store.Add(lat, long, time)
+		timeDelta := inserted.ServerTime - inserted.ClientTime
+
+		log.Printf("Coordinate {")
+		log.Printf("\tlat:\t%v", inserted.Lat)
+		log.Printf("\tlong:\t%v", inserted.Long)
+		log.Printf("\tclient:\t%d", inserted.ClientTime)
+		log.Printf("\tserver:\t%d", inserted.ServerTime)
+		log.Printf("\tdelta:\t%d", timeDelta)
+		log.Printf("}")
 
 		return c.String(200, fmt.Sprintf(
 			"Lat %v, Long %v, Client time %d, Server time %d, Time delta %d ms",
@@ -84,7 +94,7 @@ func main() {
 			inserted.Long,
 			inserted.ClientTime,
 			inserted.ServerTime,
-			inserted.ServerTime-inserted.ClientTime,
+			timeDelta,
 		))
 	})
 
