@@ -2,16 +2,18 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
 
 type Coordinates struct {
-	Lat  float64
-	Long float64
+	Lat        float64
+	Long       float64
+	ClientTime int64
+	ServerTime int64
 }
 
 type CoordinatesStore struct {
@@ -19,10 +21,19 @@ type CoordinatesStore struct {
 	mu     sync.Mutex
 }
 
-func (cs *CoordinatesStore) Add(lat, long float64) {
+func (cs *CoordinatesStore) Add(lat, long float64, clientTime int64) *Coordinates {
 	cs.mu.Lock()
 	defer cs.mu.Unlock()
-	cs.coords = append(cs.coords, Coordinates{Lat: lat, Long: long})
+
+	newCoor := Coordinates{
+		Lat:        lat,
+		Long:       long,
+		ClientTime: clientTime,
+		ServerTime: time.Now().UnixMilli(),
+	}
+
+	cs.coords = append(cs.coords, newCoor)
+	return &newCoor
 }
 
 func (cs *CoordinatesStore) Latest() (*Coordinates, bool) {
@@ -47,8 +58,7 @@ func main() {
 		// Get query params
 		latStr := c.QueryParam("lat")
 		longStr := c.QueryParam("long")
-
-		log.Printf("Processing: lat %s, long %s", latStr, longStr)
+		timeStr := c.QueryParam("time")
 
 		lat, err := strconv.ParseFloat(latStr, 64)
 		if err != nil {
@@ -60,12 +70,22 @@ func main() {
 			return c.String(400, "Invalid long")
 		}
 
+		time, err := strconv.ParseInt(timeStr, 10, 64)
+		if err != nil {
+			return c.String(400, "Invalid unix time (ms)")
+		}
+
 		// Update coordinates
-		store.Add(lat, long)
+		inserted := store.Add(lat, long, time)
 
-		log.Printf("Received coordinates: %v, %v\n", lat, long)
-
-		return c.String(200, fmt.Sprintf("Received: Lat %v, Long %v", lat, long))
+		return c.String(200, fmt.Sprintf(
+			"Lat %v, Long %v, Client time %d, Server time %d, Time delta %d ms",
+			inserted.Lat,
+			inserted.Long,
+			inserted.ClientTime,
+			inserted.ServerTime,
+			inserted.ServerTime-inserted.ClientTime,
+		))
 	})
 
 	// Handler for getting the last coordinate
