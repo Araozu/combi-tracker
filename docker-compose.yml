@@ -1,0 +1,24 @@
+services:
+  combi-tracker:
+    container_name: combi-tracker
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8007:8007"
+    restart: unless-stopped
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.combi-tracker.rule=Host(`combi-tracker.araozu.dev`)"
+      - "traefik.http.routers.combi-tracker.entrypoints=websecure"
+      - "traefik.http.routers.combi-tracker.tls=true"
+      - "traefik.http.routers.combi-tracker.tls.certresolver=araozu-wildcard"
+      - "traefik.http.routers.combi-tracker.tls.domains[0].main=araozu.dev"
+      - "traefik.http.routers.combi-tracker.tls.domains[0].sans=*.araozu.dev"
+
+networks:
+  proxy:
+    external: true
+
