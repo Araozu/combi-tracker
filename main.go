@@ -48,6 +48,8 @@ func main() {
 		latStr := c.QueryParam("lat")
 		longStr := c.QueryParam("long")
 
+		log.Printf("Processing: lat %s, long %s", latStr, longStr)
+
 		lat, err := strconv.ParseFloat(latStr, 64)
 		if err != nil {
 			return c.String(400, "Invalid lat")
@@ -61,9 +63,9 @@ func main() {
 		// Update coordinates
 		store.Add(lat, long)
 
-		log.Printf("Received coordinates: %f, %f\n", lat, long)
+		log.Printf("Received coordinates: %v, %v\n", lat, long)
 
-		return c.String(200, fmt.Sprintf("Received: Lat %f, Long %f", lat, long))
+		return c.String(200, fmt.Sprintf("Received: Lat %v, Long %v", lat, long))
 	})
 
 	// Handler for getting the last coordinate
