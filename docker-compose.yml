@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8007:8007"
+      - "8013:8888"
     restart: unless-stopped
     networks:
       - proxy
